@@ -1,0 +1,4 @@
+=bbc & sd lounge Version 0.11=
+* Added: /toggletripcode toggle displaying your tripcode
+* Added: /vtripcode set arbitrary tripcode (requires owner)
+* Updated: updated /help command to include commands that existed earlier

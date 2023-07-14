@@ -1,0 +1,11 @@
+=bbc & sd lounge Version 0.1=
+* Added: /togglerequests toggle notifications for when someone requests to dm you
+* Added: /modsay and /admin say are aliases to /say
+* Added: /say post message with rank (must be at least mod)
+* Added: /demote demote admin/mod to user
+* Added: /unadmin and /unmod (aliases for /demote)
+* Added: /listmods list obfuscated ids of all mods in bot (only owner)
+* Added: /listadmins list obfuscated ids of all admins in bot (only owner)
+* Added: /dm Sends a mention of your account to the sender of message
+* Changed: permissions for /remove, /delete, /cooldown, /warn and /blacklist were adjusted
+* Fixed: More commands return error message if required argument missing or error encountered
