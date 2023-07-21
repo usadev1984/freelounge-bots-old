@@ -227,8 +227,8 @@ format_strs = {
 		"<b>{level}</b>\n" +
 		"<i>Posting some cute pictures might help...</i>\n" +
 		"<i>(Use /toggle" + ("pats" if karma_is_pats else "karma") + " to turn these notifications off)</i>",
-	types.TRIPCODE_INFO: lambda tripcode, **_:
-		"<b>tripcode</b>: " + ("<code>{tripcode!x}</code>" if tripcode is not None else "unset"),
+	types.TRIPCODE_INFO: lambda tripcode, hideTripcode, **_:
+	"<b>tripcode</b>: " + ("<code>{tripcode!x}</code>" if tripcode is not None else "unset") + ("\n<b>hide tripcode: </b><code>{hideTripcode!x}</code>" if hideTripcode: "true" else "false"),
 	types.TRIPCODE_SET: em("Tripcode set. It will appear as: ") + "<b>{tripname!x}</b> <code>{tripcode!x}</code>",
 
 	types.ERR_NO_ARG: em("This command requires an argument."),

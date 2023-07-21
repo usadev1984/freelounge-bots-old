@@ -87,10 +87,7 @@ def _salt(c):
 
 def genTripcode(tripcode):
 	# doesn't actually match 4chan's algorithm exactly
-	try:
-		pos = tripcode.find("#")
-	except AttributeError:
-		print('AttributeError. tripcode: ', tripcode)
+	pos = tripcode.find("#")
 	trname = tripcode[:pos]
 	trpass = tripcode[pos+1:]
 
