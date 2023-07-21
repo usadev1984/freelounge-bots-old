@@ -49,7 +49,7 @@ def dump(obj, name=None, r=False):
 			print("%s%s = %r" % (name, e, ev))
 
 # Program version
-VERSION = "0.11"
+VERSION = "0.12"
 
 URL_SECRETLOUNGE = "https://github.com/secretlounge/secretlounge-ng/"
 URL_CATLOUNGE = "https://github.com/CatLounge/catlounge-ng-meow/"
