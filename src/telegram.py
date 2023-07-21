@@ -82,7 +82,6 @@ def init(config, _db, _ch):
             "cooldown", "uncooldown",
             "blacklist", "cleanup",
             "s", "sign", "dm", "vtripcode", "tripcode", "t", "tsign", "ksign", "ks",
-            "filter", "pt"
             ]
 
     # Pat aliases
@@ -843,7 +842,6 @@ def cmd_tripcode(ev, arg):
         send_answer(ev, core.set_tripcode(c_user, arg))
 
 @takesArgument(optional=True)
-def cmd_pt(ev, arg):
     c_user = UserContainer(ev.from_user)
 
     if arg == "":

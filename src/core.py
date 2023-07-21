@@ -337,7 +337,7 @@ def get_info_mod(user, msid=None, id=None):
 	if id and search(r"^[A-z0-9]{4}$", id):
 		user2 = getUserByOid(id)
 	else:
-		print("WENT HERE INSTEAD")
+		# print("WENT HERE INSTEAD")
 		user2 = db.getUser(id=cm.user_id)
 
 	if not user2:
