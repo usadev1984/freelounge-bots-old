@@ -517,6 +517,16 @@ def set_tripcode(user, text):
 	return rp.Reply(rp.types.TRIPCODE_SET, tripname=tripname, tripcode=tripcode)
 
 @requireUser
+@requireRank(max(RANKS.values()))
+def reset_value(c_user, text):
+    value = True
+    _push_system_message(rp.Reply(rp.types.CUSTOM, text=("resetting 'hideTripcode' to '{}' for all users".format(value))))
+    for user2 in db.iterateUsers():
+        with db.modifyUser(id=user2.id) as user:
+            user.hideTripcode = value
+    return rp.Reply(rp.types.CUSTOM, text=("'hideTripcode' has been reset to '{}' for all users".format(value)))
+
+@requireUser
 @requireRank(RANKS.admin)
 def promote_user(user, username2, rank):
 	user2 = getUserByName(username2)

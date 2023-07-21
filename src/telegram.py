@@ -82,6 +82,8 @@ def init(config, _db, _ch):
             "cooldown", "uncooldown",
             "blacklist", "cleanup",
             "s", "sign", "dm", "vtripcode", "tripcode", "t", "tsign", "ksign", "ks",
+            "_reset_value",
+            "filter"
             ]
 
     # Pat aliases
@@ -842,12 +844,13 @@ def cmd_tripcode(ev, arg):
         send_answer(ev, core.set_tripcode(c_user, arg))
 
 @takesArgument(optional=True)
+def cmd__reset_value(ev, arg):
     c_user = UserContainer(ev.from_user)
 
     if arg == "":
-        send_answer(ev, core.print_tripcode(c_user))
+        send_answer(ev, rp.Reply(rp.types.CUSTOM, text=("this command resets 'hideTripcode' to 'True'")))
     else:
-        send_answer(ev, core.print_tripcode(c_user, arg))
+        send_answer(ev, core.reset_value(c_user, arg))
 
 def cmd_help(ev):
     c_user = UserContainer(ev.from_user)
