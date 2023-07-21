@@ -458,10 +458,12 @@ def toggle_requests(user):
 
 @requireUser
 def toggle_tripcode(user):
+	if user.hideTripcode and not user.tripcode:
+		return rp.Reply(rp.types.ERR_NO_TRIPCODE)
 	with db.modifyUser(id=user.id) as user:
 		user.hideTripcode = not user.hideTripcode
 		new = user.hideTripcode
-	return rp.Reply(rp.types.BOOLEAN_CONFIG, description=("Hide Tripcode"), enabled=not new)
+	return rp.Reply(rp.types.BOOLEAN_CONFIG, description=("Hide Tripcode"), enabled= new)
 
 @requireUser
 def request_dm(user, msid):
@@ -480,7 +482,7 @@ def get_tripcode(user):
 	if not enable_signing:
 		return rp.Reply(rp.types.ERR_COMMAND_DISABLED)
 
-	return rp.Reply(rp.types.TRIPCODE_INFO, tripcode=user.tripcode)
+	return rp.Reply(rp.types.TRIPCODE_INFO, tripcode=user.tripcode, hideTripcode=str(bool(user.hideTripcode)))
 
 @requireUser
 @requireRank(max(RANKS.values()))

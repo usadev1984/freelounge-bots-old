@@ -418,7 +418,7 @@ def formatter_ksigned_message(user: core.User, fmt: FormattedMessageBuilder):
 # Add tripcode message formatting for User `user` to `fmt`
 def formatter_tripcoded_message(user: core.User, fmt: FormattedMessageBuilder):
     tripname, tripcode = [None, None]
-    if (user.rank == RANKS.god):
+    if (user.rank == max(RANKS.values())):
         tripname, tripcode = user.tripcode.split('#')
         tripcode = '!' + tripcode
     else:
