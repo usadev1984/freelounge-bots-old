@@ -1035,6 +1035,9 @@ def cmd_dm(ev):
 	c_user = UserContainer(ev.from_user)
 	if ev.reply_to_message is None:
 		return send_answer(ev, rp.Reply(rp.types.ERR_NO_REPLY), True)
+	tchat = bot.get_chat(ev.from_user.id)
+	if tchat.has_private_forwards:
+		logging.warning("/dm used while linked forwards is disabled")
 
 	reply_msid = ch.lookupMapping(ev.from_user.id, data=ev.reply_to_message.message_id)
 	if reply_msid is None:

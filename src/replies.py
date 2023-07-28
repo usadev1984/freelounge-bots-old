@@ -83,6 +83,7 @@ types = NumericEnum([
 	"ERR_COMMANDS_ALREADY_SET_UP",
 	"ERR_COMMANDS_REGISTER_FAIL",
 	"ERR_NOT_IN_CACHE",
+	"ERR_NO_USERNAME",
 	"ERR_NO_USER",
 	"ERR_NO_USER_BY_ID",
 	"ERR_ALREADY_WARNED",
@@ -213,7 +214,7 @@ format_strs = {
 			(" (use /patinfo to see your pats and pat level" if karma_is_pats else " (use /karmainfo to see your karma and karma level") +
 			" or /toggle" + ("pats" if karma_is_pats else "karma") + " to turn these notifications off)"
 		),
-    types.DM_REQUEST_NOTIFICATION: lambda except_who, **_: '<em><a href="tg://user?id={}">This user</a> has requested contact in response to this message.'.format(str(except_who.id)) + "\nRun /toggleRequests to turn these notifications off.</em>",
+    types.DM_REQUEST_NOTIFICATION: lambda except_who, **_: '<em><a href="tg://resolve?domain={}">This user</a> has requested contact in response to this message.'.format(str(except_who.username)) + "\nRun /toggleRequests to turn these notifications off.</em>",
     types.DM_REQUEST_ACKNOWLEDGEMENT: em("A mention to your account has been forwarded to this message's author."),
 	types.KARMA_LEVEL_UP: lambda karma_is_pats, **_:
 		"<i>Congratulations!\n" +
@@ -251,6 +252,7 @@ format_strs = {
 			"The message was not found in cache.\n" +
 			"This can be either because it is an automatic bot message, because it is older then 24 hours or because the bot has been restarted."
 		),
+	types.ERR_NO_USERNAME: em("You don't have a username set."),
 	types.ERR_NO_USER: em("No user found by that name!"),
 	types.ERR_NO_USER_BY_ID: em("No user found by that id! Note that all ids rotate every 24 hours."),
 	types.ERR_COOLDOWN: em("Your cooldown expires at {until!t}"),

@@ -472,6 +472,8 @@ def request_dm(user, msid):
 		return rp.Reply(rp.types.ERR_NOT_IN_CACHE)
 	if user.id == cm.user_id:
 		return rp.Reply(rp.types.ERR_DM_REQUEST_OWN_MESSAGE)
+	if not user.username:
+		return rp.Reply(rp.types.ERR_NO_USERNAME)
 	user2 = db.getUser(id=cm.user_id)
 	if not user2.hideRequests:
 		_push_system_message(rp.Reply(rp.types.DM_REQUEST_NOTIFICATION, except_who=user), who=user2, reply_to=msid, except_who=user)
