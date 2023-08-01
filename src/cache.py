@@ -6,13 +6,14 @@ from threading import RLock
 from src.globals import *
 
 class CachedMessage():
-	__slots__ = ('user_id', 'time', 'warned', 'upvoted', 'downvoted')
-	def __init__(self, user_id=None):
+	__slots__ = ('user_id', 'time', 'warned', 'upvoted', 'downvoted', 'tags')
+	def __init__(self, user_id=None, tags=[]):
 		self.user_id = user_id # who has sent this message
 		self.time = datetime.now() # when was this message seen?
 		self.warned = False # was the user warned for this message?
 		self.upvoted = set() # set of users that have given this message karma
 		self.downvoted = set() # set of users that have taken this message karma
+		self.tags = tags.copy() # internal tags of this message
 	def isExpired(self):
 		return datetime.now() >= self.time + timedelta(hours=24)
 	def hasUpvoted(self, user):

@@ -410,6 +410,12 @@ def formatter_signed_message(user: core.User, fmt: FormattedMessageBuilder):
     fmt.append("</a>", True)
 
 
+# Add hidden message formatting for User `user` to `fmt`
+def formatter_hidden_message(user: core.User, tag, fmt: FormattedMessageBuilder):
+    fmt.append("<i>hidden due to filter:</i> '%s'\n" % tag, True)
+    fmt.append("<i>tagged:</i> %s" % user.tags, True)
+
+
 # Add signed message formatting for User `user` to `fmt`
 def formatter_ksigned_message(user: core.User, fmt: FormattedMessageBuilder):
     karma_level = core.getKarmaLevelName(user.karma)
@@ -432,6 +438,12 @@ def formatter_tripcoded_message(user: core.User, fmt: FormattedMessageBuilder):
     fmt.prepend("</b> <code>", True)
     fmt.prepend(tripname)
     fmt.prepend("<b>", True)
+
+def formatter_tagged_message(user: core.User, fmt: FormattedMessageBuilder):
+    # due to how prepend() works the string is built right-to-left
+    fmt.prepend("</code>\n", True)
+    fmt.prepend(' #'.join(user.tags))
+    fmt.prepend("<code>#", True)
 
 ###
 
@@ -1083,12 +1095,12 @@ def relay(ev):
 
 def relay_inner(ev, *, caption_text=None, signed=False, tripcode=False, ksigned=False):
     is_media = is_forward(ev) or ev.content_type in MEDIA_FILTER_TYPES
+
+    user = db.getUser(id=ev.from_user.id)
     msid = core.prepare_user_message(UserContainer(ev.from_user), calc_spam_score(ev),
                                      is_media=is_media, signed=signed, tripcode=tripcode, ksigned=ksigned)
     if msid is None or isinstance(msid, rp.Reply):
         return send_answer(ev, msid)  # don't relay message, instead reply
-
-    user = db.getUser(id=ev.from_user.id)
 
     # for signed msgs: check user's forward privacy status first
     # FIXME? this is a possible bottleneck
