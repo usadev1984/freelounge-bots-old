@@ -585,27 +585,11 @@ def list_mods(user, rank):
 
 @requireUser
 @requireRank(RANKS.mod)
-def send_mod_message(user, arg):
-	text = arg + " ~<b>mods</b>"
-	m = rp.Reply(rp.types.CUSTOM, text=text)
-	_push_system_message(m)
-	logging.info("%s sent mod message: %s", user, arg)
-
-@requireUser
-@requireRank(RANKS.admin)
-def send_admin_message(user, arg):
-	text = arg + " ~<b>admins</b>"
-	m = rp.Reply(rp.types.CUSTOM, text=text)
-	_push_system_message(m)
-	logging.info("%s sent admin message: %s", user, arg)
-
-@requireUser
-@requireRank(RANKS.mod)
 def send_rank_message(user, arg):
 	text = arg + " ~<b>" + RANKS.reverse[user.rank] + "</b>"
 	m = rp.Reply(rp.types.CUSTOM, text=text)
 	_push_system_message(m)
-	logging.info("%s sent rank message: %s", user, arg)
+	logging.info("%s sent %s message: %s", user, RANKS.reverse[user.rank], arg)
 
 @requireUser
 @requireRank(RANKS.mod)

@@ -75,15 +75,15 @@ def init(config, _db, _ch):
             "users", "info", "rules",
             "toggledebug", "togglekarma", "togglerequests", "toggletripcode", "setkarma",
             "version", "changelog", "help", "karmainfo", "botinfo",
-            "modsay", "adminsay", "say",
-            "mod", "admin", "demote", "unadmin", "unmod", "listmods",
-			"listadmins",
+            "say", "mod", "admin", "demote",
+			"listmods", "listadmins",
             "warn", "delete", "deleteall", "remove", "removeall",
             "cooldown", "uncooldown",
             "blacklist", "cleanup",
-            "s", "sign", "dm", "vtripcode", "tripcode", "t", "tsign", "ksign", "ks",
             "_reset_value",
             "filter"
+            "s", "sign", "dm", "vtripcode", "tripcode", "t", "tsign", "ksign",
+            "ks",
             ]
 
     # Pat aliases
@@ -897,20 +897,6 @@ def cmd_changelog(ev):
 
 
 @takesArgument()
-def cmd_modsay(ev, arg):
-    c_user = UserContainer(ev.from_user)
-    arg = escape_html(arg)
-    return send_answer(ev, core.send_mod_message(c_user, arg), True)
-
-
-@takesArgument()
-def cmd_adminsay(ev, arg):
-    c_user = UserContainer(ev.from_user)
-    arg = escape_html(arg)
-    return send_answer(ev, core.send_admin_message(c_user, arg), True)
-
-
-@takesArgument()
 def cmd_say(ev, arg):
     c_user = UserContainer(ev.from_user)
     arg = escape_html(arg)
@@ -931,18 +917,6 @@ def cmd_admin(ev, arg):
 
 @takesArgument()
 def cmd_demote(ev, arg):
-    c_user = UserContainer(ev.from_user)
-    arg = arg.lstrip("@")
-    send_answer(ev, core.demote_user(c_user, arg, RANKS.user), True)
-
-@takesArgument()
-def cmd_unadmin(ev, arg):
-    c_user = UserContainer(ev.from_user)
-    arg = arg.lstrip("@")
-    send_answer(ev, core.demote_user(c_user, arg, RANKS.user), True)
-
-@takesArgument()
-def cmd_unmod(ev, arg):
     c_user = UserContainer(ev.from_user)
     arg = arg.lstrip("@")
     send_answer(ev, core.demote_user(c_user, arg, RANKS.user), True)
