@@ -1096,10 +1096,10 @@ def relay(ev):
 def relay_inner(ev, *, caption_text=None, signed=False, tripcode=False, ksigned=False):
     is_media = is_forward(ev) or ev.content_type in MEDIA_FILTER_TYPES
 
-	try:
-		user = db.getUser(id=ev.from_user.id)
-	except KeyError:
-		user = None
+    try:
+        user = db.getUser(id=ev.from_user.id)
+    except KeyError:
+        user = None
     msid = core.prepare_user_message(UserContainer(ev.from_user), calc_spam_score(ev),
                                      is_media=is_media, signed=signed, tripcode=tripcode, ksigned=ksigned)
     if msid is None or isinstance(msid, rp.Reply):
