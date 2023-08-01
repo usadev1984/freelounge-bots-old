@@ -1,4 +1,11 @@
-=bbc & sd lounge Version 0.12=
-* Changed: /tripcode now also shows the status of "hide tripcode"
-* Fixed: fixed an issue with genTripcode that caused some users' messages to not be sent
-* Fixed: /toggletripcode now shows the right status of "hide tripcode"
+=bbc & sd lounge Version 0.2=
+* Added: /tag and /filter to set tags and filters
+* Added: /toggletags to temporarily disable your own tags
+* Added: /togglehiddenmsgnoti to toggle hidden message notifications
+* Added: /modifytags to modify tag presets
+* Changed: /dm uses username instead of account id
+* Changed: /info lists account id and tags
+* Changed: changed cooldown durations to sl's cooldown durations
+* Changed: only owner can see true karma
+* Removed: /adminsay and /modsay have been replaced with /say
+* Removed: /unadmin and /unmod have been replaced with /demote
