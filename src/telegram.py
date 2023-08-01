@@ -1096,7 +1096,10 @@ def relay(ev):
 def relay_inner(ev, *, caption_text=None, signed=False, tripcode=False, ksigned=False):
     is_media = is_forward(ev) or ev.content_type in MEDIA_FILTER_TYPES
 
-    user = db.getUser(id=ev.from_user.id)
+	try:
+		user = db.getUser(id=ev.from_user.id)
+	except KeyError:
+		user = None
     msid = core.prepare_user_message(UserContainer(ev.from_user), calc_spam_score(ev),
                                      is_media=is_media, signed=signed, tripcode=tripcode, ksigned=ksigned)
     if msid is None or isinstance(msid, rp.Reply):
@@ -1111,9 +1114,27 @@ def relay_inner(ev, *, caption_text=None, signed=False, tripcode=False, ksigned=
 
     # apply text formatting to text or caption (if media)
     ev_tosend = ev
+    special_ev = None
     force_caption = None
+    s_force_caption = None
     if is_forward(ev):
         pass  # leave message alone
+    elif ev.content_type in ["voice", "audio", "video", "animation"] and user.tags and not user.disableTags:
+        if not ev.caption:
+            ev.caption = ''
+        fmt = FormattedMessageBuilder(caption_text, ev.caption, ev.text)
+        _fmt = fmt
+        formatter_tagged_message(user, _fmt)
+        _fmt = _fmt.build()
+
+        fmt = fmt.build()
+        # either replace whole message or just the caption
+        if ev.content_type == "text":
+            special_ev = _fmt or ev_tosend
+            ev_tosend = fmt or ev_tosend
+        else:
+            force_caption = fmt
+            s_force_caption = _fmt
     elif ev.content_type == "text" or ev.caption is not None or caption_text is not None:
         fmt = FormattedMessageBuilder(caption_text, ev.caption, ev.text)
         formatter_replace_links(ev, fmt)
@@ -1124,12 +1145,21 @@ def relay_inner(ev, *, caption_text=None, signed=False, tripcode=False, ksigned=
             formatter_signed_message(user, fmt)
         elif tripcode or not user.hideTripcode:
             formatter_tripcoded_message(user, fmt)
+
+        _fmt = None
+        if user.tags and not user.disableTags:
+            _fmt = fmt
+            formatter_tagged_message(user, _fmt)
+            _fmt = _fmt.build()
+
         fmt = fmt.build()
         # either replace whole message or just the caption
         if ev.content_type == "text":
+            special_ev = _fmt or ev_tosend
             ev_tosend = fmt or ev_tosend
         else:
             force_caption = fmt
+            s_force_caption = _fmt
 
     # find out which message is being replied to
     reply_msid = None
@@ -1142,14 +1172,37 @@ def relay_inner(ev, *, caption_text=None, signed=False, tripcode=False, ksigned=
     # relay message to all other users
     logging.debug("relay(): msid=%d reply_msid=%r", msid, reply_msid)
     for user2 in db.iterateUsers():
+        _ev_tosend = ev_tosend
+        _force_caption = force_caption
         if not user2.isJoined():
             continue
+
+        if user2.rank >= RANKS.mod and special_ev:
+            if not s_force_caption:
+                _ev_tosend = special_ev
+            _force_caption = s_force_caption
+        elif user2.rank >= RANKS.mod:
+            _force_caption = s_force_caption
+        elif user.tags:
+            filter_index = -1
+            for tag in user.tags:
+                if tag in user2.filters:
+                    filter_index = user.tags.index(tag)
+                    break
+            if filter_index > -1 and user2.hideHiddenMessage:
+                continue
+            elif filter_index > -1:
+                fmt = FormattedMessageBuilder(caption_text, ev.caption, '')
+                formatter_hidden_message(user, user.tags[filter_index], fmt)
+                _ev_tosend = fmt.build()
+
         if user2 == user and not user.debugEnabled:
             ch.saveMapping(user2.id, msid, ev.message_id)
             continue
 
-        send_to_single(ev_tosend, msid, user2,
-                    reply_msid=reply_msid, force_caption=force_caption)
+
+        send_to_single(_ev_tosend, msid, user2,
+                    reply_msid=reply_msid, force_caption=_force_caption)
 
 
 
