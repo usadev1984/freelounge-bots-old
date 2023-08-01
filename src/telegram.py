@@ -73,17 +73,18 @@ def init(config, _db, _ch):
     cmds = [
             "start", "stop", "setup_commands", "commands",
             "users", "info", "rules",
-            "toggledebug", "togglekarma", "togglerequests", "toggletripcode", "setkarma",
+            "toggledebug", "togglekarma", "togglerequests", "toggletripcode",
+            "togglehiddenmsgnoti", "toggletags",
+            "setkarma", "_reset_value", "settags", "modifytags",
             "version", "changelog", "help", "karmainfo", "botinfo",
             "say", "mod", "admin", "demote",
 			"listmods", "listadmins",
             "warn", "delete", "deleteall", "remove", "removeall",
             "cooldown", "uncooldown",
             "blacklist", "cleanup",
-            "_reset_value",
-            "filter"
             "s", "sign", "dm", "vtripcode", "tripcode", "t", "tsign", "ksign",
             "ks",
+            "tag", "filter"
             ]
 
     # Pat aliases
@@ -802,6 +803,8 @@ cmd_toggledebug = wrap_core(core.toggle_debug)
 cmd_togglekarma = wrap_core(core.toggle_karma)
 cmd_togglerequests = wrap_core(core.toggle_requests)
 cmd_toggletripcode = wrap_core(core.toggle_tripcode)
+cmd_togglehiddenmsgnoti = wrap_core(core.toggle_hidden_msg_noti)
+cmd_toggletags = wrap_core(core.toggle_tags)
 
 @takesArgument()
 def cmd_setkarma(ev, args):
@@ -824,6 +827,24 @@ def cmd_setkarma(ev, args):
 		return send_answer(ev, core.modify_karma(c_user, reply_msid, int(op + amount)), True)
 	else:
 		return send_answer(ev, core.modify_karma(c_user, reply_msid, op + amount), True)
+
+@takesArgument()
+def cmd_settags(ev, args):
+	if not max(RANKS.values()) == core.getUserById(ev.from_user.id).rank: # improve?
+		return
+	op, amount = args[0], args[1:]
+
+	if not search('^[0-9]+$', sub('^[+\-=]', '', args)):
+		return rp.Reply(rp.types.ERR_BAD_ARG)
+
+	c_user = UserContainer(ev.from_user)
+	reply_msid = ch.lookupMapping(ev.from_user.id, data=ev.reply_to_message.message_id)
+
+	return send_answer(ev, core.set_tags(c_user, reply_msid, int(op + amount)), True)
+
+def cmd_modifytags(ev):
+    c_user = UserContainer(ev.from_user)
+    send_answer(ev, core.modify_preset_tags(c_user, ev.text))
 
 @takesArgument(optional=True)
 def cmd_vtripcode(ev, arg):
@@ -1018,10 +1039,16 @@ def cmd_dm(ev):
 		return send_answer(ev, rp.Reply(rp.types.ERR_NOT_IN_CACHE), True)
 	return send_answer(ev, core.request_dm(c_user, reply_msid), True)
 
+def cmd_tag(ev):
+	c_user = UserContainer(ev.from_user)
+	reply_msid = ch.lookupMapping(ev.from_user.id, data=ev.message_id)
+	return send_answer(ev, core.modify_tags(c_user, ev.text, reply_msid), True)
+
 #@takesArgument()
 def cmd_filter(ev):
 	c_user = UserContainer(ev.from_user)
-	return send_answer(ev, core.modify_filters(c_user, ev.text), True)
+	reply_msid = ch.lookupMapping(ev.from_user.id, data=ev.message_id)
+	return send_answer(ev, core.modify_filters(c_user, ev.text, reply_msid), True)
 
 def relay(ev):
     # handle commands and karma giving

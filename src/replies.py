@@ -29,8 +29,12 @@ class Reply():
 
 types = NumericEnum([
 	"CUSTOM",
+	"CURRENT_TAGS",
 	"CURRENT_FILTERS",
 	"SUCCESS",
+	"SUCCESS_ADD_TAGS",
+	"SUCCESS_REMOVE_TAGS",
+	"SUCCESS_CLEAR_TAGS",
 	"SUCCESS_ADD_FILTERS",
 	"SUCCESS_REMOVE_FILTERS",
 	"SUCCESS_CLEAR_FILTERS",
@@ -72,6 +76,7 @@ types = NumericEnum([
 	"TRIPCODE_SET",
 
 	"ERR_NO_ARG",
+	"ERR_MODIFY_TAGS",
 	"ERR_MODIFY_FILTERS",
     "ERR_BAD_ARG",
     "ERR_MISSING_ARG",
@@ -146,8 +151,12 @@ def progress(value, min_value, max_value, size=10):
 
 format_strs = {
 	types.CUSTOM: "{text}",
+	types.CURRENT_TAGS: lambda tags, avail_tags, disable_tags, **_: "<i>Current tags:</i> {tags}\n<i>Available tags:</i> {avail_tags}\n<i>disableTags:</i> {disable_tags}",
 	types.CURRENT_FILTERS: lambda filters, **_: "<i>Current filters:</i> {filters}",
 	types.SUCCESS: "☑",
+	types.SUCCESS_ADD_TAGS: lambda tags: "'{tags}' <i>has/have been added to tags.</i>",
+	types.SUCCESS_REMOVE_TAGS: lambda tags: "'{tags}' <i>has/have been removed from tags.</i>",
+	types.SUCCESS_CLEAR_TAGS: "<i>All tags have been cleared.</i>",
 	types.SUCCESS_ADD_FILTERS: lambda filters: "'{filters}' <i>has/have been added to filters.</i>",
 	types.SUCCESS_REMOVE_FILTERS: lambda filters: "'{filters}' <i>has/have been removed from filters.</i>",
 	types.SUCCESS_CLEAR_FILTERS: "<i>All filters have been cleared.</i>",
@@ -233,6 +242,7 @@ format_strs = {
 	types.TRIPCODE_SET: em("Tripcode set. It will appear as: ") + "<b>{tripname!x}</b> <code>{tripcode!x}</code>",
 
 	types.ERR_NO_ARG: em("This command requires an argument."),
+	types.ERR_MODIFY_TAGS: em("Failed to modify tags."),
 	types.ERR_MODIFY_FILTERS: em("Failed to modify filters."),
 	types.ERR_BAD_ARG: em("You have provided a bad argument."),
 	types.ERR_MISSING_ARG: em("You have not provided enough arguments."),
@@ -299,15 +309,18 @@ format_strs = {
 		"<b>Warnings</b>: {warnings} " + smiley(warnings) +
 		( " (one warning will be removed on {warnExpiry!t})" if warnings > 0 else "" ) + ", " +
 		"<b>Cooldown</b>: " +
-		( cooldown and "yes, until {cooldown!t}" or "no" ),
-	types.USER_INFO_MOD: lambda karma_is_pats, karma_obfuscated, warnings, cooldown, **_:
+		( cooldown and "yes, until {cooldown!t}" or "no" ) + "\n" +
+		"<b>User tags</b>: {user_tags}",
+	types.USER_INFO_MOD: lambda karma_is_pats, karma_obfuscated, warnings, cooldown, user_tags, message_tags, **_:
 		"<b>ID</b>: {id}\n"+
 		"<b>rank</b>: {rank} ({rank_i})\n" +
 		"<b>" + ("Pats" if karma_is_pats else "Karma") + "</b>: " + ("~" if karma_obfuscated else "") + "{karma}\n"+
 		"<b>Warnings</b>: {warnings}" +
 		(" (one warning will be removed on {warnExpiry!t})" if warnings > 0 else "") + ", " +
 		"<b>Cooldown</b>: " +
-		(cooldown and "yes, until {cooldown!t}" or "no"),
+		(cooldown and "yes, until {cooldown!t}" or "no") + "\n" +
+		"<b>User tags</b>: {user_tags}" + "\n" +
+		"<b>Message tags</b>: {message_tags}",
 	types.USERS_INFO:
 		"<b>Total users:</b> {total}\n" +
 		"<b>• Active:</b> {active}\n" +
@@ -373,6 +386,11 @@ format_strs = {
 		"\n<b><u>Request commands**</u></b>\n" +
 		"	/togglerequests" +		   " - <i>Toggle dm request notifications</i>\n" +
 		"	/dm" +					   " (reply) - <i>Sends a mention to your account to the sender of the message</i>\n" +
+		"<b><u>**new and experimental</u></b>\n" +
+		"\n<b><u>Filtering/Tagging commands**</u></b>\n" +
+		"	/tag [+]TEXT or -TEXT" +		   " - <i>set/unset the tags added to your post OR dispaly current tag(s)</i>\n" +
+		"	/filter [+]TEXT or -TEXT" +		   " - <i>set/unset the tags you don't want to see OR dispaly current filter(s)</i>\n" +
+		"	/togglehiddenmsgnoti" +		   " - <i>toggle showing notifications that a message has been hidden</i>\n" +
 		"<b><u>**new and experimental</u></b>\n" +
 		(
 			"\n<b><u>Mod commands</u></b>\n" +

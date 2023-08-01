@@ -19,14 +19,18 @@ def init(config, _db, _ch):
 class SystemConfig():
     def __init__(self):
         self.motd = None
+        self.tags = None
     def defaults(self):
         self.motd = ""
+        self.tags = []
 
 USER_PROPS = (
         "id", "username", "realname", "rank", "joined", "left", "lastActive",
         "cooldownUntil", "blacklistReason", "warnings", "warnExpiry", "karma",
-        "hideKarma", "hideRequests", "hideTripcode", "debugEnabled", "tripcode"
-		#"filters"
+        "hideKarma", "hideRequests", "hideTripcode", "hideHiddenMessage",
+		"disableTags",
+        "debugEnabled",
+        "tripcode", "tags", "filters"
         )
 
 class User():
@@ -47,9 +51,12 @@ class User():
         self.hideKarma = None # bool
         self.hideRequests = None # bool
         self.hideTripcode = None # bool
+        self.hideHiddenMessage = None # bool
+        self.disableTags = None # bool
         self.debugEnabled = None # bool
         self.tripcode = None # str?
-        #self.filters = None # array
+        self.tags = None # array
+        self.filters = None # array
     def __eq__(self, other):
         if isinstance(other, User):
             return self.id == other.id
@@ -65,8 +72,11 @@ class User():
         self.hideKarma = False
         self.hideRequests = False
         self.hideTripcode = hide_tripcode
+        self.hideHiddenMessage = hide_hidden_message_notification
+        self.disableTags = False
         self.debugEnabled = False
-        #self.filters = [] # should be something like '#all' or smth
+        self.tags = [] # should be something like '#all' or smth
+        self.filters = [] # should be something like '#all' or smth
     def isJoined(self):
         return self.left is None
     def isInCooldown(self):
@@ -190,19 +200,21 @@ class JSONDatabase(Database):
         return
     @staticmethod
     def _systemConfigToDict(config):
-        return {"motd": config.motd}
+        return {"motd": config.motd, "tags": config.tags}
     @staticmethod
     def _systemConfigFromDict(d):
         if d is None: return None
         config = SystemConfig()
         config.motd = d["motd"]
+        config.tags = d["tags"]
         return config
     @staticmethod
     def _userToDict(user):
         props = ["id", "username", "realname", "rank", "joined", "left",
                  "lastActive", "cooldownUntil", "blacklistReason", "warnings",
-                 "warnExpiry", "karma", "hideKarma", "hideRequests", "hideTripcode", "debugEnabled", "tripcode"]
-                 #"warnExpiry", "karma", "hideKarma", "hideRequests", "debugEnabled", "tripcode", "filters"]
+                 "warnExpiry", "karma", "hideKarma", "hideRequests",
+                 "hideTripcode", "hideHiddenMessage", "disableTags", "debugEnabled",
+                 "tripcode", "tags", "filters"]
         d = {}
         for prop in props:
             value = getattr(user, prop)
@@ -349,7 +361,11 @@ class SQLiteDatabase(Database):
                 self.db.execute("ALTER TABLE `users` ADD `hideRequests` TINYINT FALSE")
             if not row_exists("users", "hideTripcode"):
                 self.db.execute("ALTER TABLE `users` ADD `hideTripcode` TINYINT FALSE")
+            if not row_exists("users", "tags"):
+                logging.warning("tags are not supported")
+                pass
             if not row_exists("users", "filters"):
+                logging.warning("filters are not supported")
                 #self.db.execute("ALTER TABLE `users` ADD `filters` TEXT")
                 pass
     def getUser(self, id=None):
