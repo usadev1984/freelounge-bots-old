@@ -226,13 +226,33 @@ class JSONDatabase(Database):
     def _userFromDict(d):
         if d is None: return None
         props = ["id", "username", "realname", "rank", "blacklistReason",
-                 "warnings", "karma", "hideKarma", "hideRequests", "hideTripcode", "debugEnabled"]
-                 #"warnings", "karma", "hideKarma", "hideRequests", "debugEnabled", "filters"]
+                 "warnings", "karma", "hideKarma", "hideRequests",
+                 "hideTripcode", "hideHiddenMessage", "disableTags", "debugEnabled",
+                 "tripcode", "tags", "filters"]
         props_d = [("tripcode", None)]
         dateprops = ["joined", "left", "lastActive", "cooldownUntil", "warnExpiry"]
         user = User()
+        defaults = User()
+        defaults.defaults()
+        defaults.id = 3 # should be removed to avoid possible issues
+        failed_to_load = False
         for prop in props:
-            setattr(user, prop, d[prop])
+            try:
+                setattr(user, prop, d[prop])
+            except KeyError as e:
+                failed_to_load = True
+                logging.warning("Key {} doesn't exist in database.".format(e))
+                attr = getattr(defaults, prop, None)
+                if attr != None: # FIXME
+                    try:
+                        setattr(user, prop, attr)
+                    except e as e:
+                        logging.error('failed to set prop to default value',e)
+                    logging.warning("user key '{}' set to '{}'".format(prop, getattr(user,prop, None)))
+                else:
+                    logging.error("failed to get default value. got {}".format(attr))
+        if failed_to_load:
+            logging.warn('migrated user: "{}"'.format(user.realname))
         for prop, default in props_d:
             setattr(user, prop, d.get(prop, default))
         for prop in dateprops:

@@ -27,6 +27,7 @@ enable_signing: false
 
 # default values that will be set for new user's options
 hide_tripcode: true
+hide_hidden_message_notification: false
 
 # limit usage of +1 and -1 to once every interval (seconds)
 # defaults to 0 (+1) and 60 (-1) if not specified, set to 0 to disable
