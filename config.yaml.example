@@ -3,11 +3,11 @@ bot_token: "BOT_TOKEN_HERE"
 
 # supported db types: json, sqlite
 # both take a single argument which is the database file path
-database: [sqlite, "secretlounge.sqlite"]
+database: [json, "secretlounge.json"]
 
 # registration open for new users?
 # defaults to true
-#reg_open: true
+reg_open: true
 
 # relay contacts
 allow_contacts: false
