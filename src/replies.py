@@ -292,6 +292,7 @@ format_strs = {
 		em("This message can't be displayed on premium accounts with restricted access to voice and video messages"),
 
 	types.USER_INFO: lambda karma_is_pats, warnings, cooldown, **_:
+		"<b>account ID</b>: {account_id}\n" +
 		"<b>ID</b>: {id}, <b>username</b>: {username!x}\n" +
 		"<b>rank</b>: {rank}\n" +
 		"<b>" + ("Pats" if karma_is_pats else "Karma") + "</b>: {karma} ({karmalevel})\n" +
@@ -366,7 +367,7 @@ format_strs = {
 			"/" + ("p" if karma_is_pats else "k") + "s TEXT" +         " - <i>Sign message with your " + ("pat" if karma_is_pats else "karma") + " level</i>\n" +
 		"	/" + ("pat" if karma_is_pats else "karma") + "info" +      " - <i>Show info about your " + ("pat" if karma_is_pats else "karma") + " level</i>\n" +
 		"\n<b><u>Tripcode commands</u></b>\n" +
-		"	/toggletripcode" +		   " - <i>Toggle displaying your tripcode</i><b><u>**</u></b>\n" +
+		"	/toggletripcode" +		   " - <i>Toggle displaying your tripcode</i>\n" +
 		"	/tripcode" +		   " name#password - <i>Sets your name to <b>name</b> and uses <b>password</b> to generate your tripcode</i>\n" +
 		"	/tsign or /t" +					   " TEXT - <i>Send a message with your tripcode</i>\n" +
 		"\n<b><u>Request commands**</u></b>\n" +
@@ -376,8 +377,7 @@ format_strs = {
 		(
 			"\n<b><u>Mod commands</u></b>\n" +
 			"	/info" +              " (reply) - <i>Show info about a user</i>\n" +
-			"	/modsay TEXT" +       " - <i>Post mod message (alias to /say)</i>\n" +
-			"	/say TEXT" +          " - <i>Post message with rank</i><b><u>**</u></b>\n" +
+			"	/say TEXT" +          " - <i>Post message with rank</i>\n" +
 			"	/warn" +       	      " (reply) - <i>Warn a user</i>\n" +
 			"	/remove" +      	  " (reply) - <i>Delete the message</i>\n" +
 			"	/removeall" +   	  " (reply) - <i>Delete all messages from a user</i>\n" +
@@ -389,18 +389,14 @@ format_strs = {
 		if rank >= RANKS.mod else "") +
 		(
 			"\n<b><u>Admin commands</u></b>\n" +
-			"	/adminsay TEXT" +          " - <i>Post admin message (alias to /say)</i>\n" +
 			"	/say TEXT" +               " - <i>Post message with rank<b><u>**</u></b></i>\n" +
 			"	/rules TEXT" +             " - <i>Define rules (HTML)</i>\n" +
 			"	/botinfo" +                " - <i>Show bot system info</i>\n" +
 			"	/uncooldown ID/USERNAME" + " - <i>Remove cooldown from a user</i>\n" +
 			"	/mod USERNAME" +           " - <i>Promote a user to mod</i>\n" +
 			"	/admin USERNAME" +         " - <i>Promote a user to admin</i>\n" +
-			"	/demote USERNAME or ACCOUNT_ID or ID in bot" +        " - <i>demote admin or mod to user</i><b><u>**</u></b>\n" +
-			"	/unadmin USERNAME" +       " - <i>alias for /demote</i><b><u>**</u></b>\n" +
-			"	/unmod USERNAME" +         " - <i>alias for /demote</i><b><u>**</u></b>\n" +
-			"	/commands COMMANDS" +      " - <i>Change bot commands</i>\n" +
-			"<b><u>**new and experimental</u></b>\n"
+			"	/demote USERNAME or ACCOUNT_ID or ID in bot" +        " - <i>demote admin or mod to user</i>\n" +
+			"	/commands COMMANDS" +      " - <i>Change bot commands</i>\n"
 		if rank >= RANKS.admin else "")
 		if rank is not None else ""),
 	types.KARMA_INFO: lambda karma, karma_is_pats, level_karma, next_level_karma, **_:
