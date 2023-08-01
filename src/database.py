@@ -9,6 +9,11 @@ from time import sleep
 
 from src.globals import *
 
+def init(config, _db, _ch):
+    global hide_hidden_message_notification, hide_tripcode
+    hide_hidden_message_notification = config.get("hide_hidden_message_notification", False)
+    hide_tripcode = config.get("hide_tripcode", True)
+
 # what's inside the db
 
 class SystemConfig():
@@ -59,7 +64,7 @@ class User():
         self.karma = 0
         self.hideKarma = False
         self.hideRequests = False
-        self.hideTripcode = True
+        self.hideTripcode = hide_tripcode
         self.debugEnabled = False
         #self.filters = [] # should be something like '#all' or smth
     def isJoined(self):
