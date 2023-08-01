@@ -304,6 +304,7 @@ def user_leave(user):
 @requireUser
 def get_info(user):
 	params = {
+			"account_id": user.id,
 			"id": user.getObfuscatedId(),
 			"username": user.getFormattedName(),
 			"rank_i": user.rank,
