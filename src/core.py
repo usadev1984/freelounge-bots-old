@@ -315,6 +315,7 @@ def get_info(user):
 			"warnings": user.warnings,
 			"warnExpiry": user.warnExpiry,
 			"cooldown": user.cooldownUntil if user.isInCooldown() else None,
+			"user_tags": user.tags,
 			}
 	return rp.Reply(rp.types.USER_INFO, **params)
 
@@ -354,6 +355,8 @@ def get_info_mod(user, msid=None, id=None):
 			"warnings": user2.warnings,
 			"warnExpiry": user2.warnExpiry,
 			"cooldown": user2.cooldownUntil if user2.isInCooldown() else None,
+			"user_tags": user2.tags,
+			"message_tags": cm.tags if cm else None,
 			}
 	return rp.Reply(rp.types.USER_INFO_MOD, **params)
 
@@ -458,6 +461,24 @@ def toggle_requests(user):
 	return rp.Reply(rp.types.BOOLEAN_CONFIG, description="DM request notifications", enabled=not new)
 
 @requireUser
+def toggle_hidden_msg_noti(user):
+	if user.hideHiddenMessage:
+		pass
+	with db.modifyUser(id=user.id) as user:
+		user.hideHiddenMessage = not user.hideHiddenMessage
+		new = user.hideHiddenMessage
+	return rp.Reply(rp.types.BOOLEAN_CONFIG, description=("Hide hidden message notification"), enabled= new)
+
+@requireUser
+def toggle_tags(user):
+	if user.disableTags:
+		pass
+	with db.modifyUser(id=user.id) as user:
+		user.disableTags = not user.disableTags
+		new = user.disableTags
+	return rp.Reply(rp.types.BOOLEAN_CONFIG, description=("disableTags"), enabled= new)
+
+@requireUser
 def toggle_tripcode(user):
 	if user.hideTripcode and not user.tripcode:
 		return rp.Reply(rp.types.ERR_NO_TRIPCODE)
@@ -486,6 +507,46 @@ def get_tripcode(user):
 		return rp.Reply(rp.types.ERR_COMMAND_DISABLED)
 
 	return rp.Reply(rp.types.TRIPCODE_INFO, tripcode=user.tripcode, hideTripcode=str(bool(user.hideTripcode)))
+
+@requireUser
+@requireRank(max(RANKS.values()))
+def modify_preset_tags(user, arg):
+	avail_tags = db.getSystemConfig().tags
+	try:
+		_,t = arg.split(' ')
+	except ValueError:
+		return rp.Reply(rp.types.CURRENT_TAGS, tags=user.tags, avail_tags=avail_tags, disable_tags='')
+
+	if t in avail_tags:
+		return rp.Reply(rp.types.ERR_TAG_EXISTS)
+
+	op, t = t[0], t[1:]
+	if not is_valid_tag(t):
+		return rp.Reply(rp.types.ERR_BAD_TAG)
+	if op == '+':
+		with db.modifySystemConfig() as config:
+			config.tags.append(t)
+			config.tags = list(set(config.tags))
+		logging.info("%s set tags to: %r", user, config.tags)
+		return rp.Reply(rp.types.SUCCESS_ADD_TAGS, tags=t)
+	elif op == '-':
+		with db.modifySystemConfig() as config:
+			if t == "all":
+				config.tags.clear()
+				logging.info("%s cleared tags.", user)
+				return rp.Reply(rp.types.SUCCESS_CLEAR_TAGS)
+			try:
+				i = config.tags.index(t)
+			except ValueError:
+				return rp.Reply(rp.types.ERR_MODIFY_TAGS)
+			config.tags.pop(i)
+			logging.info("%s set tags to: %r", user, config.tags)
+			return rp.Reply(rp.types.SUCCESS_REMOVE_TAGS, tags=config.tags)
+	else:
+		t = op + t
+		with db.modifySystemConfig() as config:
+			config.tags.append(t)
+		return rp.Reply(rp.types.SUCCESS_ADD_TAGS, tags=t)
 
 @requireUser
 @requireRank(max(RANKS.values()))
@@ -889,29 +950,98 @@ def extract_tags(msg): #buggy?
 	return res
 
 @requireUser
-@requireRank(RANKS.mod)
-def modify_filters(user, arg): # should this be able to process multiple tags at the same time?
-	try:
-		_,t = arg.split(' ')
-	except ValueError:
+def modify_tags(user, args, msid):
+	avail_tags = db.getSystemConfig().tags
+	tags = args.split(' ')[1:]
+	if not tags:
+		return rp.Reply(rp.types.CURRENT_TAGS, tags=user.tags, avail_tags=avail_tags, disable_tags=user.disableTags)
+	print(tags)
+	if len(tags) == 1 and tags[0] == '-all':
+		with db.modifyUser(id=user.id) as u:
+			u.tags.clear()
+			return rp.Reply(rp.types.SUCCESS_CLEAR_TAGS)
+
+	for t in tags:
+		if t[0] == '-':
+			t = t[1:]
+			if not is_valid_tag(t):
+				print("bad tag: '{}'".format(t))
+				return rp.Reply(rp.types.ERR_BAD_TAG)
+			if not t in avail_tags: # better to be avoided?
+				return rp.Reply(rp.types.ERR_NO_TAG)
+			with db.modifyUser(id=user.id) as u:
+				if t == "all":
+					u.tags.clear()
+					return rp.Reply(rp.types.SUCCESS_CLEAR_TAGS)
+				try:
+					i = user.tags.index(t)
+				except ValueError:
+					return rp.Reply(rp.types.ERR_MODIFY_TAGS)
+				u.tags.pop(i)
+				print('removed', t)
+				#rp.Reply(rp.types.SUCCESS_REMOVE_TAGS, tags=)
+				_push_system_message(rp.Reply(rp.types.SUCCESS_REMOVE_TAGS, tags=t), who=user, reply_to=msid)
+		else:
+			if t[0] == '+':
+				t = t[1:]
+			if not is_valid_tag(t):
+				print("bad tag: '{}'".format(t))
+				return rp.Reply(rp.types.ERR_BAD_TAG)
+			if not t in avail_tags:
+				return rp.Reply(rp.types.ERR_NO_TAG)
+			with db.modifyUser(id=user.id) as u:
+				u.tags.append(t)
+				u.tags = list(set(u.tags))
+			print('added', t)
+			#return rp.Reply(rp.types.SUCCESS_ADD_TAGS, tags=t)
+			_push_system_message(rp.Reply(rp.types.SUCCESS_ADD_TAGS, tags=t), who=user, reply_to=msid)
+
+
+@requireUser
+def modify_filters(user, args, msid):
+	avail_tags = db.getSystemConfig().tags
+	filters = args.split(' ')[1:]
+	if not filters:
 		return rp.Reply(rp.types.CURRENT_FILTERS, filters=user.filters)
-
-	op, t = t[0], t[1:]
-	if op == '+' and is_valid_tag(t):
-		user.filters.append(t)
-		return rp.Reply(rp.types.SUCCESS_ADD_FILTERS, filters=t)
-	elif op == '-' and is_valid_tag(t):
-		if t == "all":
-			user.filters.clear()
+	print(filters)
+	if len(filters) == 1 and filters[0] == '-all':
+		with db.modifyUser(id=user.id) as u:
+			u.filters.clear()
 			return rp.Reply(rp.types.SUCCESS_CLEAR_FILTERS)
-		try:
-			i = user.filters.index(t)
-		except ValueError:
-			return rp.Reply(rp.types.ERR_MODIFY_FILTERS)
-		t = user.filters.pop(i)
-		return rp.Reply(rp.types.SUCCESS_REMOVE_FILTERS, filters=t)
 
-	logging.info("%s sent rank message: %s", user, arg) # ???
+	for t in filters:
+		if t[0] == '-':
+			t = t[1:]
+			if not is_valid_tag(t):
+				print("bad filter: '{}'".format(t))
+				return rp.Reply(rp.types.ERR_BAD_TAG)
+			if not t in avail_tags: # better to be avoided?
+				return rp.Reply(rp.types.ERR_NO_TAG)
+			with db.modifyUser(id=user.id) as u:
+				if t == "all":
+					u.filters.clear()
+					return rp.Reply(rp.types.SUCCESS_CLEAR_FILTERS)
+				try:
+					i = user.filters.index(t)
+				except ValueError:
+					return rp.Reply(rp.types.ERR_MODIFY_FILTERS)
+				u.filters.pop(i)
+				print('removed', t)
+				_push_system_message(rp.Reply(rp.types.SUCCESS_REMOVE_FILTERS, filters=t), who=user, reply_to=msid)
+		else:
+			if t[0] == '+':
+				t = t[1:]
+			if not is_valid_tag(t):
+				print("bad tag: '{}'".format(t))
+				return rp.Reply(rp.types.ERR_BAD_TAG)
+			if not t in avail_tags:
+				return rp.Reply(rp.types.ERR_NO_TAG)
+			with db.modifyUser(id=user.id) as u:
+				u.filters.append(t)
+				u.filters = list(set(u.filters))
+			print('added', t)
+			_push_system_message(rp.Reply(rp.types.SUCCESS_ADD_FILTERS, filters=t), who=user, reply_to=msid)
+
 
 @requireUser
 def prepare_user_message(user: User, msg_score, *, is_media=False, signed=False, tripcode=False, ksigned=False):
@@ -937,7 +1067,7 @@ def prepare_user_message(user: User, msg_score, *, is_media=False, signed=False,
 			return rp.Reply(rp.types.ERR_SPAMMY_SIGN)
 		sign_last_used[user.id] = datetime.now()
 
-	return ch.assignMessageId(CachedMessage(user.id))
+	return ch.assignMessageId(CachedMessage(user.id, user.tags))
 
 # who is None -> to everyone except the user <except_who> (if applicable)
 # who is not None -> only to the user <who>
