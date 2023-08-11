@@ -1,11 +1,5 @@
-=bbc & sd lounge Version 0.2=
-* Added: /tag and /filter to set tags and filters
-* Added: /toggletags to temporarily disable your own tags
-* Added: /togglehiddenmsgnoti to toggle hidden message notifications
-* Added: /modifytags to modify tag presets
-* Changed: /dm uses username instead of account id
-* Changed: /info lists account id and tags
-* Changed: changed cooldown durations to sl's cooldown durations
-* Changed: only owner can see true karma
-* Removed: /adminsay and /modsay have been replaced with /say
-* Removed: /unadmin and /unmod have been replaced with /demote
+=bbc & sd lounge Version 0.21=
+* Added: /settags can be used by a mod/admin to modify user's tags
+* Changed: tags appear as "+tag" instead of "#tag"
+* Changed: tags appear for all users instead of just mods/admins
+* Fixed: tripcode doesn't appear when toggledebug is enabled

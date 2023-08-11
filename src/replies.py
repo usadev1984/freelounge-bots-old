@@ -399,11 +399,13 @@ format_strs = {
 			"	/warn" +       	      " (reply) - <i>Warn a user</i>\n" +
 			"	/remove" +      	  " (reply) - <i>Delete the message</i>\n" +
 			"	/removeall" +   	  " (reply) - <i>Delete all messages from a user</i>\n" +
+			"	/settags" +   	  " (reply) - <i>modify tags of the sender of message being replied to (takes the same args as /tag and /filter)<b><u>**</u></b></i>\n" +
 			"	/cooldown DURATION" + " (reply) - <i>Give spicific cooldown and warn</i>\n" +
 			"	/delete" +     	      " (reply) - <i>Warn a user and delete the message</i>\n" +
 			"	/delete DURATION" +   " (reply) - <i>Delete, warn and give spicific cooldown</i>\n" +
 			"	/deleteall" +         " (reply) - <i>Warn a user and delete all messages</i>\n" +
-			"	/blacklist REASON" +  " (reply) - <i>Blacklist a user and delete all messages</i>\n"
+			"	/blacklist REASON" +  " (reply) - <i>Blacklist a user and delete all messages</i>\n" +
+			"<b><u>**new and experimental</u></b>\n"
 		if rank >= RANKS.mod else "") +
 		(
 			"\n<b><u>Admin commands</u></b>\n" +
