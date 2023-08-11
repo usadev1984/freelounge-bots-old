@@ -17,10 +17,10 @@ allow_documents: true
 allow_polls: true
 
 # allow mods to remove message without issuing a cooldown
-allow_remove_command: false
+allow_remove_command: true
 
 # enable signing messages using /sign or /tsign as well as setting a tripcode
-enable_signing: false
+enable_signing: true
 # limit usage of /sign to once in every interval (seconds)
 # defaults to 600 if not specified, set to 0 to disable
 #sign_limit_interval: 600
@@ -28,6 +28,11 @@ enable_signing: false
 # default values that will be set for new user's options
 hide_tripcode: true
 hide_hidden_message_notification: false
+# you must use /modifyfilters +your_tag after setting it here, otherwise,
+# users won't be able to use it with /tag and /filter
+# one possible value for either of these variables is: ["furry", "ai"]
+default_tags: []
+default_filters: []
 
 # limit usage of +1 and -1 to once every interval (seconds)
 # defaults to 0 (+1) and 60 (-1) if not specified, set to 0 to disable

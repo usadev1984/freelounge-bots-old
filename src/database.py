@@ -10,9 +10,13 @@ from time import sleep
 from src.globals import *
 
 def init(config, _db, _ch):
-    global hide_hidden_message_notification, hide_tripcode
-    hide_hidden_message_notification = config.get("hide_hidden_message_notification", False)
+    global hide_hidden_message_notification, hide_tripcode, default_tags, \
+        default_filters
+    hide_hidden_message_notification = config.get("hide_hidden_message_notification", \
+                                                  False)
     hide_tripcode = config.get("hide_tripcode", True)
+    default_tags = config.get("default_tags", [])
+    default_filters = config.get("default_filters", [])
 
 # what's inside the db
 
@@ -75,8 +79,8 @@ class User():
         self.hideHiddenMessage = hide_hidden_message_notification
         self.disableTags = False
         self.debugEnabled = False
-        self.tags = [] # should be something like '#all' or smth
-        self.filters = [] # should be something like '#all' or smth
+        self.tags = default_tags # should be something like '#all' or smth
+        self.filters = default_filters # should be something like '#all' or smth
     def isJoined(self):
         return self.left is None
     def isInCooldown(self):
