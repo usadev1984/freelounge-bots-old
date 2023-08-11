@@ -415,6 +415,21 @@ def get_users(user):
 				 total=active + inactive + black, cooldown=cooldown)
 
 @requireUser
+@requireRank(max(RANKS.values()))
+def get_stats(user):
+	tag_set, filter_set, tag_empty, filter_empty = 0, 0, 0, 0
+	for user2 in db.iterateUsers():
+		if len(user2.tags) != 0:
+			tag_set += 1
+		if user2.tags == []:
+			tag_empty += 1
+		if user2.filters != []:
+			filter_set += 1
+		if len(user2.filters) == 0:
+			filter_empty += 1
+	return rp.Reply(rp.types.CUSTOM, text="tag set: {}\nfilter set: {}\ntag empty: {}\nfilter empty: {}\n".format(tag_set, filter_set, tag_empty, filter_empty))
+
+@requireUser
 @requireRank(RANKS.admin)
 def set_commands_dict(user, arg):
 	cmds = {
@@ -901,6 +916,20 @@ def modify_karma(user, msid, amount):
 	elif amount < 0:
 		return rp.Reply(rp.types.KARMA_VOTED_DOWN, bot_name=bot_name, **params)
 
+@requireUser
+@requireRank(RANKS.mod)
+def set_tags(c_user, args, msid):
+	print('caling set tags')
+	cm = ch.getMessage(msid)
+	if cm is None or cm.user_id is None:
+		return rp.Reply(rp.types.ERR_NOT_IN_CACHE)
+	user = getUserById(cm.user_id)
+	tags = args.split(' ')[1:]
+	# _push_system_message(rp.Reply(rp.types.CUSTOM, text=("<i>applying tags:</i> {}\n<i>to user:</i> {}".format(tags, user.getObfuscatedId())), who=user))
+	logging.info("%s, is modifying %s's tags to '%s'", c_user, user.getObfuscatedId(), ','.join(tags))
+	modify_tags(user, args, msid)
+	return rp.Reply(rp.types.CUSTOM, text=("<i>applying tags:</i> {}\n<i>to user:</i> {}".format(tags, user.getObfuscatedId())))
+
 def is_valid_tag(s):
 	for c in s:
 		if not c.isalnum() and not c in ['_', '.']: # maybe add ' '?
@@ -950,7 +979,7 @@ def extract_tags(msg): #buggy?
 	return res
 
 @requireUser
-def modify_tags(user, args, msid):
+def modify_tags(user, args, msid=None):
 	avail_tags = db.getSystemConfig().tags
 	tags = args.split(' ')[1:]
 	if not tags:

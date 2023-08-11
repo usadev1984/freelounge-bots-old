@@ -75,7 +75,7 @@ def init(config, _db, _ch):
             "users", "info", "rules",
             "toggledebug", "togglekarma", "togglerequests", "toggletripcode",
             "togglehiddenmsgnoti", "toggletags",
-            "setkarma", "_reset_value", "settags", "modifytags",
+            "setkarma", "_reset_value", "settags", "modifytags", "stats",
             "version", "changelog", "help", "karmainfo", "botinfo",
             "say", "mod", "admin", "demote",
 			"listmods", "listadmins",
@@ -442,8 +442,8 @@ def formatter_tripcoded_message(user: core.User, fmt: FormattedMessageBuilder):
 def formatter_tagged_message(user: core.User, fmt: FormattedMessageBuilder):
     # due to how prepend() works the string is built right-to-left
     fmt.prepend("</code>\n", True)
-    fmt.prepend(' #'.join(user.tags))
-    fmt.prepend("<code>#", True)
+    fmt.prepend(' +'.join(user.tags))
+    fmt.prepend("<code>+", True)
 
 ###
 
@@ -776,6 +776,8 @@ def cmd_commands(ev, arg):
 
 cmd_users = wrap_core(core.get_users)
 
+cmd_stats = wrap_core(core.get_stats)
+
 
 @takesArgument(optional=True)
 def cmd_info(ev, arg):
@@ -842,17 +844,16 @@ def cmd_setkarma(ev, args):
 
 @takesArgument()
 def cmd_settags(ev, args):
-	if not max(RANKS.values()) == core.getUserById(ev.from_user.id).rank: # improve?
-		return
-	op, amount = args[0], args[1:]
+    c_user = UserContainer(ev.from_user)
 
-	if not search('^[0-9]+$', sub('^[+\-=]', '', args)):
-		return rp.Reply(rp.types.ERR_BAD_ARG)
+    if ev.reply_to_message is None:
+        return send_answer(ev, rp.Reply(rp.types.ERR_NO_REPLY), True)
 
-	c_user = UserContainer(ev.from_user)
-	reply_msid = ch.lookupMapping(ev.from_user.id, data=ev.reply_to_message.message_id)
+    reply_msid = ch.lookupMapping(ev.from_user.id, data=ev.reply_to_message.message_id)
+    if reply_msid is None:
+        return send_answer(ev, rp.Reply(rp.types.ERR_NOT_IN_CACHE), True)
 
-	return send_answer(ev, core.set_tags(c_user, reply_msid, int(op + amount)), True)
+    return send_answer(ev, core.set_tags(c_user, ev.text, reply_msid), True)
 
 def cmd_modifytags(ev):
     c_user = UserContainer(ev.from_user)
@@ -1123,6 +1124,14 @@ def relay_inner(ev, *, caption_text=None, signed=False, tripcode=False, ksigned=
         if not ev.caption:
             ev.caption = ''
         fmt = FormattedMessageBuilder(caption_text, ev.caption, ev.text)
+        formatter_replace_links(ev, fmt)
+        formatter_network_links(fmt)
+        if ksigned:
+            formatter_ksigned_message(user, fmt)
+        elif signed:
+            formatter_signed_message(user, fmt)
+        elif tripcode or not user.hideTripcode:
+            formatter_tripcoded_message(user, fmt)
         _fmt = fmt
         formatter_tagged_message(user, _fmt)
         _fmt = _fmt.build()
@@ -1177,13 +1186,7 @@ def relay_inner(ev, *, caption_text=None, signed=False, tripcode=False, ksigned=
         if not user2.isJoined():
             continue
 
-        if user2.rank >= RANKS.mod and special_ev:
-            if not s_force_caption:
-                _ev_tosend = special_ev
-            _force_caption = s_force_caption
-        elif user2.rank >= RANKS.mod:
-            _force_caption = s_force_caption
-        elif user.tags:
+        if user.tags:
             filter_index = -1
             for tag in user.tags:
                 if tag in user2.filters:
@@ -1195,6 +1198,13 @@ def relay_inner(ev, *, caption_text=None, signed=False, tripcode=False, ksigned=
                 fmt = FormattedMessageBuilder(caption_text, ev.caption, '')
                 formatter_hidden_message(user, user.tags[filter_index], fmt)
                 _ev_tosend = fmt.build()
+            elif special_ev:
+                if not s_force_caption:
+                    _ev_tosend = special_ev
+                _force_caption = s_force_caption
+            else:
+                _force_caption = s_force_caption
+
 
         if user2 == user and not user.debugEnabled:
             ch.saveMapping(user2.id, msid, ev.message_id)
