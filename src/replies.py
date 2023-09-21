@@ -335,7 +335,7 @@ format_strs = {
 
 	types.PROGRAM_VERSION: "<b>free sd lounge</b>" +
        " <b>v{version}</b> <i>is a fork of <a href=\"{url_catlounge}\">catlounge bot</a>.</i>" +
-	   " <i>For updates check /changelog or <a href=\"https://t.me/freeloungebots\">the freelounge announcements channel</a>.</i>",
+	   " <i>For updates check /changelog or <a href=\"https://t.me/librelounge\">the librelounge announcements channel</a>.</i>",
 	types.PROGRAM_CHANGELOG: lambda versions, count=-1, **_:
 		"\n\n".join(["<b><u>" + version + "</u></b>\n" +
 			"\n".join(
