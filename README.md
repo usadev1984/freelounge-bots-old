@@ -1,3 +1,6 @@
+# status
+this project will no longer receive updates. see [*librelounge*](https://github.com/usadev1984/librelounge) for the new project
+
 # freelounge
 this project is a fork of [*CatLounge*](https://github.com/CatLounge/CatLounge) and it currently hosts the source code of freelounge's /sd/ and /bbc/ bots.
 
